@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-
-__author__ = 'DFIRSec (@pulsecode)'
-__description__ = 'Confirm file type by matching the magic signature ("number")'
-__version__ = "1.2"
-
-
 import argparse
 import binascii
 import os
@@ -12,8 +5,12 @@ import sys
 
 from colorama import Fore, Style, init
 
-# Ref: https://www.garykessler.net/library/file_sigs.html
+__author__ = 'DFIRSec (@pulsecode)'
+__version__ = "v0.0.3"
+__description__ = 'Confirm file type by matching the magic signature ("number")'
 
+
+# Ref: https://www.garykessler.net/library/file_sigs.html
 file_types = {
     '7z': b'37 7a bc af 27 1c',
     'aac': b'41 41 43 00 01 00',
@@ -60,9 +57,6 @@ file_types = {
     'zip': b'50 4b 03 04'
 }
 
-# Initizlize colorama
-init()
-
 
 class Termcolor:
     # Unicode Symbols and colors
@@ -75,7 +69,8 @@ class Termcolor:
     RESET = Style.RESET_ALL
 
 
-# Initialize termcolors
+# Initizlize colorama and termcolors
+init()
 tc = Termcolor()
 
 
@@ -96,6 +91,7 @@ def scan_dir(path):
 
 def main(path, filetype=None):
     found = []
+    count = 0
     for x in scan_dir(path):
         try:
             if filetype:
@@ -105,15 +101,17 @@ def main(path, filetype=None):
                 for k, v in file_types.items():
                     if v in x[0]:
                         print(f" {tc.BOLD}{k.upper():7}{tc.RESET}{x[1]}")
+                        count += 1
         except KeyError:
             sys.exit(f"{tc.RED}[ERROR]{tc.RESET} File format '{tc.YELLOW}{filetype}{tc.RESET}' is not an available selection.")  # nopep8
         except KeyboardInterrupt:
             sys.exit("\nExited")
 
-    if found and found != None:
+    if found:
         print('\n'.join([x for x in found]))
-    else:
-        print(f"Nothing found for file type: '{filetype}'")
+
+    if not found and count == 0:
+        print(f"{tc.YELLOW}No matching file types found{tc.RESET}")
 
 
 if __name__ == '__main__':
@@ -124,7 +122,7 @@ if __name__ == '__main__':
      / /  / / /_/ / /_/ / / /__   / /___/ / / /  __/ /__/ ,<
     /_/  /_/\__,_/\__, /_/\___/   \____/_/ /_/\___/\___/_/|_|
                  /____/
-                                                v{__version__}
+                                                {__version__}
                                                 {__author__}
     """
 
@@ -133,8 +131,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', dest='path', help="Path to search")
     parser.add_argument('-f', '--filetype', help="file type selector")
-    parser.add_argument('-l', '--listtype',
-                        action='store_true', help="list file types")
+    parser.add_argument('-l', '--listtype', action='store_true',
+                        help="list file types")
 
     args = parser.parse_args()
 
