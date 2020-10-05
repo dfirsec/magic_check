@@ -3,6 +3,7 @@ import binascii
 import os
 import sys
 
+import requests
 from colorama import Fore, Style, init
 
 __author__ = 'DFIRSec (@pulsecode)'
@@ -135,6 +136,14 @@ if __name__ == '__main__':
                         help="list file types")
 
     args = parser.parse_args()
+    
+    # check if new version is available
+    try:
+        latest = requests.get("https://api.github.com/repos/dfirsec/magic_check/releases/latest").json()["tag_name"]  # nopep8
+        if latest != __version__:
+            print(f"{Fore.YELLOW}* Release {latest} of magic_check is available{Fore.RESET}")  # nopep8
+    except Exception as err:
+        print(f"{Fore.LIGHTRED_EX}[Error]{Fore.RESET} {err}\n")
 
     if len(sys.argv[1:]) == 0:
         parser.print_help()
