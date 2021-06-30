@@ -1,4 +1,4 @@
-## Installation
+# Installation
 
 ```text
 git clone https://github.com/dfirsec/magic_check.git
@@ -6,11 +6,14 @@ cd magic_check
 pip install -r requirements.txt
 ```
 
-### Simple Usage
+## Simple Usage
+
 ```text
 python check_magic.py -p {FILE PATH}
 ```
-#### Option
+
+**_Option_**
+
 ```text
 python check_magic.py -p {FILE PATH} -f {FILE FORMAT}
 ```
@@ -18,7 +21,7 @@ python check_magic.py -p {FILE PATH} -f {FILE FORMAT}
 ### Check for all file formats (from list below)
 
 ```text
-python check_magic.py d:\Downloads\Ultimate_Guide_Arduino_Sensors_Modules      
+python check_magic.py d:\Downloads\Ultimate_Guide_Arduino_Sensors_Modules
 
  PDF   d:\Downloads\Ultimate_Guide_Arduino\Ultimate_Guide_Arduino_Sensors_Modules.pdf
  ZIP   d:\Downloads\Ultimate_Guide_Arduino\1 - DHT11_DHT22\Code\DHT_library.zip
@@ -30,11 +33,11 @@ python check_magic.py d:\Downloads\Ultimate_Guide_Arduino_Sensors_Modules
  PNG   d:\Downloads\Ultimate_Guide_Arduino\13 - MRFC522 RFID\Schematics\RFID.png
  PNG   d:\Downloads\Ultimate_Guide_Arduino\14 - Relay\Schematics\Relay_Module.png
  ...
- ```
- 
- ### Check by specified file format (from list below)...in this example, a ```zip``` file.
- 
- ```text
+```
+
+### Check by specified file format (from list below)...in this example, a `zip` file.
+
+```text
 python check_magic.py d:\Downloads\Ultimate_Guide_Arduino_Sensors_Modules -f zip
 
 d:\Downloads\Ultimate_Guide_Arduino_Sensors_Modules\1 - DHT11_DHT22\Code\DHT_library.zip
