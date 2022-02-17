@@ -1,24 +1,25 @@
+"""Confirm file type by matching the magic number/signature."""
+
 import argparse
 import binascii
-from os import scandir
 import sys
+from os import scandir
+from pathlib import Path
 
 from colorama import Fore, Style, init
 
-__author__ = "DFIRSec (@pulsecode)"
-__version__ = "v0.0.4"
-__description__ = 'Confirm file type by matching the magic signature ("number")'
-
+AUTHOR = "DFIRSec (@pulsecode)"
+VERSION = "v0.0.5"
 
 # Ref: https://www.garykessler.net/library/file_sigs.html
-file_types = {
+filesigs = {
     "7z": b"37 7a bc af 27 1c",
     "aac": b"41 41 43 00 01 00",
     "asm": b"00 61 73 6d",
     "avi": b"52 49 46 46",
     "au": b"64 6e 73 2e",
     "bin": b"53 50 30 31",
-    "exe": b"4d 5a",
+    "exe": b"4d 5a 90 00",
     "bmp": b"42 4d",
     "bz2": b"42 5a 68",
     "cab": b"4d 53 43 46",
@@ -66,96 +67,116 @@ file_types = {
     "zip": b"50 4b 03 04",
 }
 
-
-class Termcolor:
-    init()
-    BOLD = Fore.LIGHTWHITE_EX
-    CYAN = Fore.CYAN
-    GRAY = Fore.LIGHTBLACK_EX
-    GREEN = Fore.LIGHTGREEN_EX
-    RED = Fore.RED
-    YELLOW = Fore.LIGHTYELLOW_EX
-    RESET = Style.RESET_ALL
-
-
-# Initialize colorama and termcolors
-tc = Termcolor()
+# terminal colors
+init()  # initialize colorama
+BOLD = Fore.LIGHTWHITE_EX
+CYAN = Fore.CYAN
+GRAY = Fore.LIGHTBLACK_EX
+GREEN = Fore.LIGHTGREEN_EX
+RED = Fore.RED
+YELLOW = Fore.LIGHTYELLOW_EX
+RESET = Style.RESET_ALL
 
 
-def dirscanner(path):
-    try:
-        with scandir(path) as it:
-            for files in it:
-                if not files.name.startswith(".") and files.is_file():
-                    try:
-                        with open(files, "rb") as fd:
-                            file_head = fd.read(20)
-                            yield binascii.hexlify(file_head, " "), files.path
-                    except KeyboardInterrupt:
-                        sys.exit("\nExited")
-                    except Exception:
-                        continue
-    except PermissionError as e:
-        print(e)
+def get_file_header(path) -> bytes:
+    """Grab the first 20 bytes of the file header.
+
+    Args:
+        path (_type_): Full path to file
+
+    Returns:
+        bytes: String of hex bytes representing the file signature
+    """
+    num_bytes = 20
+    with open(path, "rb") as infile:
+        header = infile.read(num_bytes)
+    return header
 
 
-def main(path, filetype=None):
-    found = []
-    count = 0
-    for x in dirscanner(path):
+def dirscanner(path: Path):
+    """Scans directory and grab file headers.
+
+    Args:
+        path (Path): Full path to file
+
+    Yields:
+        _type_: Generator of hex representation of the binary data
+    """
+    with scandir(path) as enum_dir:
         try:
-            if filetype:
-                if file_types[filetype] in x[0]:
-                    found.append(x[1])
-            else:
-                for k, v in file_types.items():
-                    if v in x[0]:
-                        print(f" {tc.BOLD}{k.upper():7}{tc.RESET}{x[1]}")
-                        count += 1
-        except KeyError:
-            sys.exit(
-                f"{tc.RED}[ERROR]{tc.RESET} File format '{tc.YELLOW}{filetype}{tc.RESET}' is not an available selection."
-            )  # nopep8
-        except KeyboardInterrupt:
-            sys.exit("\nExited")
+            for files in enum_dir:
+                if not files.name.startswith(".") and files.is_file():
+                    file_obj = get_file_header(files)
+                    yield binascii.hexlify(file_obj, " "), files.path
+        except PermissionError as err:
+            print(err)
+        except FileNotFoundError as err:
+            sys.exit(err)
+
+
+def get_results(path, filetype=None):
+    """Yield the results of file matches.
+
+    Args:
+        path (_type_): Full path to file
+        filetype (_type_, optional): File extension. Defaults to None.
+
+    Yields:
+        _type_: Generator of file matches
+    """
+    for (header, filepath) in dirscanner(path):
+        if filetype:
+            if filesigs[filetype] in header:
+                yield f" {BOLD}{filetype.upper():7}{RESET}{filepath}"
+        else:
+            for ext, byte_str in filesigs.items():
+                if byte_str in header:
+                    yield f" {BOLD}{ext.upper():7}{RESET}{filepath}"
+
+
+def main(path, filetype):
+    """Main program execution.
+
+    Args:
+        path (_type_): Full path to file
+        filetype (_type_): _description_
+    """
+    found = "\n".join(list(get_results(path, filetype)))
 
     if found:
-        print("\n".join([x for x in found]))
-
-    if not found and count == 0:
-        print(f"{tc.YELLOW}No matching file types found{tc.RESET}")
+        print(found)
+    else:
+        print(f"{YELLOW}No matching file types found{RESET}")
 
 
 if __name__ == "__main__":
     banner = fr"""
-        __  ___            _         ________              __  
+        __  ___            _         ________              __
        /  |/  /___ _____ _(_)____   / ____/ /_  ___  _____/ /__
       / /|_/ / __ `/ __ `/ / ___/  / /   / __ \/ _ \/ ___/ //_/
      / /  / / /_/ / /_/ / / /__   / /___/ / / /  __/ /__/ ,<
     /_/  /_/\__,_/\__, /_/\___/   \____/_/ /_/\___/\___/_/|_|
                  /____/
-                                                {__version__}
-                                                {__author__}
+                                                {VERSION}
+                                                {AUTHOR}
     """
 
-    print(f"{tc.CYAN}{banner}{tc.RESET}")
+    print(f"{CYAN}{banner}{RESET}")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", dest="path", help="Path to search")
+    parser.add_argument("path", help="Path to search")
     parser.add_argument("-f", "--filetype", help="file type selector")
     parser.add_argument("-l", "--listtype", action="store_true", help="list file types")
 
     args = parser.parse_args()
 
-    if len(sys.argv[1:]) == 0:
-        parser.print_help()
-        parser.exit()
-
     if args.listtype:
-        print(f"{tc.GREEN}Choose from the following:{tc.RESET}")
-        for k in file_types:
-            print(f" {tc.GRAY}-{tc.RESET} {tc.BOLD}{k}{tc.RESET}")
+        print(f"{GREEN}Choose from the following:{RESET}")
+        print("\n".join(list(filesigs.keys())))
     elif args.filetype:
-        main(args.path, args.filetype.lower())
+        try:
+            main(args.path, args.filetype.lower())
+        except KeyError:
+            sys.exit(f"File format '{YELLOW}{args.filetype}{RESET}' is not an available selection.")
     else:
-        main(args.path)
+        main(args.path, filetype=None)

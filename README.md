@@ -9,13 +9,13 @@ pip install -r requirements.txt
 ## Simple Usage
 
 ```text
-python check_magic.py -p {FILE PATH}
+python check_magic.py {FILE PATH}
 ```
 
 **_Option_**
 
 ```text
-python check_magic.py -p {FILE PATH} -f {FILE FORMAT}
+python check_magic.py {FILE PATH} -f {FILE FORMAT}
 ```
 
 ### Check for all file formats (from list below)
