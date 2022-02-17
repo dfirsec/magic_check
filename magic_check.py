@@ -28,9 +28,10 @@ filesigs = {
     "deb": b"21 3c 61 72 63 68 3e",
     "doc": b"cf 11 e0 a1 b1 1a e1 00",
     "elf": b"7f 45 4c 46",
-    "flac": b"66 4C 61 43",
+    "flac": b"66 4c 61 43",
     "flash": b"43 57 53",
     "flv": b"46 4c 56 01",
+    "ico": b"00 00 01 00",
     "gif87a": b"47 49 46 38 37 61",
     "gif89a": b"47 49 46 38 39 61",
     "gzip": b"1f 8b 08",
@@ -53,10 +54,11 @@ filesigs = {
     "rar": b"52 61 72 21 1a 07 01 00",
     "raw": b"52 41 57 41 44 41 54 41",
     "reg": b"72 65 67 66",
+    "rpm": b"ed ab ee db",
     "rtf": b"7b 5c 72 74 66 31",
     "sqlite": b"53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00",
     "tar": b"75 73 74 61 72",
-    "tif": b"49 49 2A 00",
+    "tif": b"49 49 2a 00",
     "tor": b"64 38 3a 61 6e 6e 6f 75 6e 63 65",
     "vmdk": b"4b 44 4d",
     "vmem": b"53 ff 00 f0",
@@ -108,10 +110,10 @@ def dirscanner(path: Path):
                 if not files.name.startswith(".") and files.is_file():
                     file_obj = get_file_header(files)
                     yield binascii.hexlify(file_obj, " "), files.path
-        except PermissionError as err:
-            print(err)
-        except FileNotFoundError as err:
-            sys.exit(err)
+        except PermissionError as perm_err:
+            print(perm_err)
+        except FileNotFoundError as file_err:
+            sys.exit(file_err)
 
 
 def get_results(path, filetype=None):
@@ -181,5 +183,5 @@ if __name__ == "__main__":
     else:
         try:
             main(args.path, filetype=None)
-        except NotADirectoryError as err:
-            print(err)
+        except NotADirectoryError as dir_err:
+            print(dir_err)
