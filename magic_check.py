@@ -84,7 +84,7 @@ def get_file_header(path) -> bytes:
     """Grab the first 20 bytes of the file header.
 
     Args:
-        path (_type_): Full path to file
+        path: Full path to file
 
     Returns:
         bytes: String of hex bytes representing the file signature
@@ -102,7 +102,7 @@ def dirscanner(path: Path):
         path (Path): Full path to file
 
     Yields:
-        _type_: Generator of hex representation of the binary data
+        generator: Generator of hex representation of the binary data
     """
     with scandir(path) as enum_dir:
         try:
@@ -116,15 +116,15 @@ def dirscanner(path: Path):
             sys.exit(file_err)
 
 
-def get_results(path, filetype=None):
+def get_results(path: Path, filetype=None):
     """Yield the results of file matches.
 
     Args:
-        path (_type_): Full path to file
-        filetype (_type_, optional): File extension. Defaults to None.
+        path (Path): Full path to file
+        filetype (str, optional): File extension. Defaults to None.
 
     Yields:
-        _type_: Generator of file matches
+        generator: Generator of file matches
     """
     for (header, filepath) in dirscanner(path):
         if filetype:
@@ -136,19 +136,20 @@ def get_results(path, filetype=None):
                     yield f" {BOLD}{ext.upper():7}{RESET}{filepath}"
 
 
-def main(path, filetype):
+def main(path: Path, filetype):
     """Main program execution.
 
     Args:
-        path (_type_): Full path to file
-        filetype (_type_): _description_
+        path (Path): Full path to file
+        filetype (str): File extension
     """
+    print(type(path))
     found = "\n".join(list(get_results(path, filetype)))
 
     if found:
         print(found)
     else:
-        print(f"{YELLOW}No matching file types found{RESET}")
+        print(f"{YELLOW}[-] No matching file types found for '{filetype}'.{RESET}")
 
 
 if __name__ == "__main__":
@@ -179,7 +180,9 @@ if __name__ == "__main__":
         try:
             main(args.path, args.filetype.lower())
         except KeyError:
-            sys.exit(f"File format '{YELLOW}{args.filetype}{RESET}' is not an available selection.")
+            sys.exit(f"[x] File format '{YELLOW}{args.filetype}{RESET}' is not an available selection.")
+        except NotADirectoryError as dir_err:
+            print(dir_err)
     else:
         try:
             main(args.path, filetype=None)
