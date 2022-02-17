@@ -179,4 +179,7 @@ if __name__ == "__main__":
         except KeyError:
             sys.exit(f"File format '{YELLOW}{args.filetype}{RESET}' is not an available selection.")
     else:
-        main(args.path, filetype=None)
+        try:
+            main(args.path, filetype=None)
+        except NotADirectoryError as err:
+            print(err)
