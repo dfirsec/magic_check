@@ -11,7 +11,7 @@ from colorama import Fore, Style, init
 AUTHOR = "DFIRSec (@pulsecode)"
 VERSION = "v0.0.5"
 
-# Credit:
+# Credits:
 # https://www.garykessler.net/library/file_sigs.html
 # https://asecuritysite.com/forensics/magic
 
