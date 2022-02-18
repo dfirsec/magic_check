@@ -11,7 +11,10 @@ from colorama import Fore, Style, init
 AUTHOR = "DFIRSec (@pulsecode)"
 VERSION = "v0.0.5"
 
-# Ref: https://www.garykessler.net/library/file_sigs.html
+# Credit:
+# https://www.garykessler.net/library/file_sigs.html
+# https://asecuritysite.com/forensics/magic
+
 filesigs = {
     "7z": b"37 7a bc af 27 1c",
     "aac": b"41 41 43 00 01 00",
@@ -27,6 +30,7 @@ filesigs = {
     "dat": b"50 4d 4f 43 43 4d 4f 43",
     "deb": b"21 3c 61 72 63 68 3e",
     "doc": b"cf 11 e0 a1 b1 1a e1 00",
+    "docx": b"50 4b 03 04",
     "elf": b"7f 45 4c 46",
     "flac": b"66 4c 61 43",
     "flash": b"43 57 53",
@@ -35,10 +39,12 @@ filesigs = {
     "gif87a": b"47 49 46 38 37 61",
     "gif89a": b"47 49 46 38 39 61",
     "gzip": b"1f 8b 08",
+    "jar": b"50 4b 03 04 14 00 08 00 08 00",
     "jfif": b"ff d8 ff e0 00 10 4a 46 49 46 00 01",
     "jpg": b"ff d8 ff db",
     "luac": b"1b 4c 75 61",
     "lz4": b"04 22 4d 18",
+    "mdb": b"53 74 61 6e 64 61 72 64 20 4a 65 74",
     "mkv": b"1a 45 df a3",
     "mlv": b"4d 4c 56 49",
     "mp3": b"49 44 33",
@@ -51,6 +57,8 @@ filesigs = {
     "pcapng": b"0a 0d 0d 0a",
     "pdf": b"25 50 44 46 2d",
     "png": b"89 50 4e 47 0d 0a 1a 0a",
+    "pptx": b"50 4b 03 04",
+    "psd": b"38 42 50 53",
     "rar": b"52 61 72 21 1a 07 01 00",
     "raw": b"52 41 57 41 44 41 54 41",
     "reg": b"72 65 67 66",
@@ -65,8 +73,10 @@ filesigs = {
     "webp": b"52 49 46 46 94 45 0a 00 57 45 42 50 56 50 38",
     "wmv": b"30 26 b2 75 8e 66 cf 11 a6 d9 00 aa 00 62 ce 6c",
     "xar": b"78 61 72 21",
+    "xlsx": b"50 4b 03 04",
     "xml": b"3c 3f 78 6d 6c",
     "zip": b"50 4b 03 04",
+    "zlib": b"78 9c",
 }
 
 # terminal colors
@@ -128,8 +138,9 @@ def get_results(path: Path, filetype=None):
     """
     for (header, filepath) in dirscanner(path):
         if filetype:
-            if filesigs[filetype] in header:
+            if filetype == filepath.split(".")[1] and filesigs[filetype] in header:
                 yield f" {BOLD}{filetype.upper():7}{RESET}{filepath}"
+        # if no filetype, yield all file results
         else:
             for ext, byte_str in filesigs.items():
                 if byte_str in header:
@@ -143,7 +154,6 @@ def main(path: Path, filetype):
         path (Path): Full path to file
         filetype (str): File extension
     """
-    print(type(path))
     found = "\n".join(list(get_results(path, filetype)))
 
     if found:
