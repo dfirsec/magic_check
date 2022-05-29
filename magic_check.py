@@ -157,9 +157,7 @@ def main(path: Path, filetype):
         path (Path): Full path to file
         filetype (str): File extension
     """
-    found = "\n".join(list(get_results(path, filetype)))
-
-    if found:
+    if found := "\n".join(list(get_results(path, filetype))):
         print(found)
     else:
         print(f"{YELLOW}[-] No matching file types found for '{filetype}'.{RESET}")
